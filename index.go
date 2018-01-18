@@ -15,8 +15,9 @@ func handleErr(err error) {
 }
 
 type sstpHeader struct {
-	Version uint8
-	C       uint8
+	MajorVersion uint(4)
+	MinorVersion uint(4)
+	C       bool
 	Length  uint16
 }
 
@@ -35,7 +36,7 @@ func handlePacket(input []byte) {
 		fmt.Printf("hdr: %v", header)
 	}
 
-	if header.C == 1 {
+	if header.C {
 		var controlHeader sstpControlHeader
 		buf := bytes.NewReader(input[:])
 		err := binary.Read(buf, binary.BigEndian, &controlHeader)
