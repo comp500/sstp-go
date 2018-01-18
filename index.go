@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"net"
@@ -9,6 +11,39 @@ import (
 func handleErr(err error) {
 	if err != nil {
 		log.Fatalf("%s\n", err)
+	}
+}
+
+type sstpHeader struct {
+	Version uint8
+	C       uint8
+	Length  uint16
+}
+
+type sstpControlHeader struct {
+	MessageType      uint16
+	AttributesLength uint16
+}
+
+func handlePacket(input []byte) {
+	var header sstpHeader
+	buf := bytes.NewReader(input[:])
+	err := binary.Read(buf, binary.BigEndian, &header)
+	if err != nil {
+		fmt.Println("binary.Read failed:", err)
+	} else {
+		fmt.Printf("hdr: %v", header)
+	}
+
+	if header.C == 1 {
+		var controlHeader sstpControlHeader
+		buf := bytes.NewReader(input[:])
+		err := binary.Read(buf, binary.BigEndian, &controlHeader)
+		if err != nil {
+			fmt.Println("binary.Read failed:", err)
+		} else {
+			fmt.Printf("hdr: %v", controlHeader)
+		}
 	}
 }
 
@@ -95,6 +130,7 @@ func main() {
 					// Do something with the data
 					// This case means we got an error and the goroutine has finished
 					log.Printf("%s\n", data)
+					handlePacket(data)
 				case err := <-eCh:
 					log.Fatalf("%s\n", err)
 					// handle our error then exit for loop
