@@ -13,16 +13,57 @@ func handleErr(err error) {
 	}
 }
 
+// MessageType is the type of message this packet is
+type MessageType uint16
+
+// Constants for MessageType values
+const (
+	MessageTypeCallConnectRequest = 1
+	MessageTypeCallConnectAck     = 2
+	MessageTypeCallConnectNak     = 3
+	MessageTypeCallConnected      = 4
+	MessageTypeCallAbort          = 5
+	MessageTypeCallDisconnect     = 6
+	MessageTypeCallDisconnectAck  = 7
+	MessageTypeEchoRequest        = 8
+	MessageTypeEchoResponse       = 9
+)
+
+func (k MessageType) String() string {
+	switch k {
+	case MessageTypeCallConnectRequest:
+		return "CallConnectRequest"
+	case MessageTypeCallConnectAck:
+		return "CallConnectAck"
+	case MessageTypeCallConnectNak:
+		return "CallConnectNak"
+	case MessageTypeCallConnected:
+		return "CallConnected"
+	case MessageTypeCallAbort:
+		return "CallAbort"
+	case MessageTypeCallDisconnect:
+		return "CallDisconnect"
+	case MessageTypeCallDisconnectAck:
+		return "CallDisconnectAck"
+	case MessageTypeEchoRequest:
+		return "EchoRequest"
+	case MessageTypeEchoResponse:
+		return "EchoResponse"
+	default:
+		return fmt.Sprintf("Unknown(%d)", k)
+	}
+}
+
 type sstpHeader struct {
 	MajorVersion uint8
 	MinorVersion uint8
 	C            bool
 	Length       uint16
-	Data         interface{}
 }
 
 type sstpControlHeader struct {
-	MessageType      uint16
+	sstpHeader
+	MessageType      MessageType
 	AttributesLength uint16
 	Data             interface{}
 }
@@ -35,18 +76,16 @@ func handlePacket(input []byte) {
 	header.C = input[1] == 1
 	header.Length = binary.BigEndian.Uint16(input[2:4])
 
-	fmt.Printf("hdr: %v", header)
+	if header.C {
+		controlHeader := &sstpControlHeader{}
+		controlHeader.sstpHeader = *header
+		controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[4:6]))
+		controlHeader.AttributesLength = binary.BigEndian.Uint16(input[6:8])
+		fmt.Printf("hdr: %v", controlHeader)
+		return
+	}
 
-	/*if header.C {
-		var controlHeader sstpControlHeader
-		buf := bytes.NewReader(input[:])
-		err := binary.Read(buf, binary.BigEndian, &controlHeader)
-		if err != nil {
-			fmt.Println("binary.Read failed:", err)
-		} else {
-			fmt.Printf("hdr: %v", controlHeader)
-		}
-	}*/
+	fmt.Printf("hdr: %v", header)
 }
 
 func main() {
