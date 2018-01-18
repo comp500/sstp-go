@@ -13,6 +13,13 @@ func handleErr(err error) {
 	}
 }
 
+type sstpHeader struct {
+	MajorVersion uint8
+	MinorVersion uint8
+	C            bool
+	Length       uint16
+}
+
 // MessageType is the type of message this packet is
 type MessageType uint16
 
@@ -54,18 +61,44 @@ func (k MessageType) String() string {
 	}
 }
 
-type sstpHeader struct {
-	MajorVersion uint8
-	MinorVersion uint8
-	C            bool
-	Length       uint16
-}
-
 type sstpControlHeader struct {
 	sstpHeader
 	MessageType      MessageType
 	AttributesLength uint16
+	Attributes       []sstpAttribute
 	Data             interface{}
+}
+
+// AttributeID is the type of attribute this attribute is
+type AttributeID uint8
+
+// Constants for MessageType values
+const (
+	AttributeIDEncapsulatedProtocolID = 1
+	AttributeIDStatusInfo             = 2
+	AttributeIDCryptoBinding          = 3
+	AttributeIDCryptoBindingReq       = 4
+)
+
+func (k AttributeID) String() string {
+	switch k {
+	case AttributeIDEncapsulatedProtocolID:
+		return "EncapsulatedProtocolID"
+	case AttributeIDStatusInfo:
+		return "StatusInfo"
+	case AttributeIDCryptoBinding:
+		return "CryptoBinding"
+	case AttributeIDCryptoBindingReq:
+		return "CryptoBindingReq"
+	default:
+		return fmt.Sprintf("Unknown(%d)", k)
+	}
+}
+
+type sstpAttribute struct {
+	Reserved    byte
+	AttributeID AttributeID
+	Length      uint16
 }
 
 func handlePacket(input []byte) {
@@ -81,6 +114,11 @@ func handlePacket(input []byte) {
 		controlHeader.sstpHeader = *header
 		controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[4:6]))
 		controlHeader.AttributesLength = binary.BigEndian.Uint16(input[6:8])
+
+		/*for i := 0; i < int(controlHeader.AttributesLength); i++ {
+
+		}*/
+
 		fmt.Printf("hdr: %v", controlHeader)
 		return
 	}
