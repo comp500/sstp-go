@@ -166,13 +166,11 @@ func main() {
 			// continuously read from the connection
 			for {
 				select {
-				// This case means we recieved data on the connection
-				case data := <-ch:
+				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
-					// This case means we got an error and the goroutine has finished
 					log.Printf("%s\n", data)
 					handlePacket(data)
-				case err := <-eCh:
+				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					log.Fatalf("%s\n", err)
 					// handle our error then exit for loop
 					break
