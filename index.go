@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/lunixbochs/struc"
 )
 
 func handleErr(err error) {
@@ -15,10 +16,10 @@ func handleErr(err error) {
 }
 
 type sstpHeader struct {
-	MajorVersion uint(4)
-	MinorVersion uint(4)
-	C       bool
-	Length  uint16
+	MajorVersion uint8 `struc:[4]uint8`
+	MinorVersion uint8 `struc:[4]uint8`
+	C            bool
+	Length       uint16
 }
 
 type sstpControlHeader struct {
@@ -27,16 +28,16 @@ type sstpControlHeader struct {
 }
 
 func handlePacket(input []byte) {
-	var header sstpHeader
+	header := &sstpHeader{}
 	buf := bytes.NewReader(input[:])
-	err := binary.Read(buf, binary.BigEndian, &header)
+	err := struc.Unpack(buf, header)
 	if err != nil {
 		fmt.Println("binary.Read failed:", err)
 	} else {
 		fmt.Printf("hdr: %v", header)
 	}
 
-	if header.C {
+	/*if header.C {
 		var controlHeader sstpControlHeader
 		buf := bytes.NewReader(input[:])
 		err := binary.Read(buf, binary.BigEndian, &controlHeader)
@@ -45,7 +46,7 @@ func handlePacket(input []byte) {
 		} else {
 			fmt.Printf("hdr: %v", controlHeader)
 		}
-	}
+	}*/
 }
 
 func main() {
