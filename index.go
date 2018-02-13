@@ -124,9 +124,8 @@ func handlePacket(input []byte, conn net.Conn) {
 		/*for i := 0; i < int(controlHeader.AttributesLength); i++ {
 
 		}*/
-		sendAckPacket(conn)
-
 		log.Printf("read: %v\n", controlHeader)
+		sendAckPacket(conn)
 		return
 	}
 
