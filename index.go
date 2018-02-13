@@ -126,7 +126,7 @@ func handlePacket(input []byte, conn net.Conn) {
 		}*/
 		sendAckPacket(conn)
 
-		fmt.Printf("hdr: %v\n", controlHeader)
+		log.Printf("read: %v\n", controlHeader)
 		return
 	}
 
@@ -134,7 +134,7 @@ func handlePacket(input []byte, conn net.Conn) {
 	dataHeader.sstpHeader = *header
 	dataHeader.Data = input[4:(len(input) - 4)]
 
-	fmt.Printf("hdr: %v\n", dataHeader)
+	log.Printf("read: %v\n", dataHeader)
 }
 
 func packHeader(header sstpHeader, outputBytes []byte) {
@@ -174,6 +174,7 @@ func sendAckPacket(conn net.Conn) {
 	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, nil}
 	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, uint16(len(attributes)), attributes, nil}
 
+	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 48)
 	packControlHeader(controlHeader, outputBytes)
 	conn.Write(outputBytes)
@@ -228,11 +229,11 @@ func main() {
 				"Server: Microsoft-HTTPAPI/2.0",
 				"Content-Length: 18446744073709551615")
 			handleErr(err)
-			log.Printf("%v", n)
+			log.Printf("%v HTTP bytes read", n)
 
-			/*b, err := ioutil.ReadAll(c)
-			handleErr(err)
-			log.Printf("%s\n", b)*/
+			// digest rest of first packet
+			data := make([]byte, 512)
+			conn.Read(data)
 
 			ch := make(chan []byte)
 			eCh := make(chan error)
