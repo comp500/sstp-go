@@ -141,8 +141,8 @@ func packHeader(header sstpHeader, outputBytes []byte) {
 
 func packAttribute(attribute sstpAttribute, outputBytes []byte) {
 	// Don't set 0, should be reserved
-	binary.BigEndian.PutUint16(outputBytes[1:3], uint16(attribute.AttributeID))
-	binary.BigEndian.PutUint16(outputBytes[3:5], attribute.Length)
+	outputBytes[1] = uint8(attribute.AttributeID)
+	binary.BigEndian.PutUint16(outputBytes[2:4], attribute.Length)
 	copy(outputBytes[5:(len(outputBytes)-5)], attribute.Data)
 }
 
