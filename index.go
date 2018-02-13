@@ -143,7 +143,7 @@ func packAttribute(attribute sstpAttribute, outputBytes []byte) {
 	// Don't set 0, should be reserved
 	binary.BigEndian.PutUint16(outputBytes[1:3], uint16(attribute.AttributeID))
 	binary.BigEndian.PutUint16(outputBytes[3:5], attribute.Length)
-	attribute.Data = outputBytes[5:(len(outputBytes) - 5)]
+	copy(outputBytes[5:(len(outputBytes)-5)], attribute.Data)
 }
 
 func packControlHeader(header sstpControlHeader, outputBytes []byte) {
@@ -151,9 +151,9 @@ func packControlHeader(header sstpControlHeader, outputBytes []byte) {
 	binary.BigEndian.PutUint16(outputBytes[4:6], uint16(header.MessageType))
 	binary.BigEndian.PutUint16(outputBytes[6:8], header.AttributesLength)
 	currentPosition := 8
-	for i := 0; i < len(header.Attributes); i++ {
-		nextPosition := currentPosition + int(header.Attributes[i].Length)
-		packAttribute(header.Attributes[i], outputBytes[currentPosition:nextPosition])
+	for _, v := range header.Attributes {
+		nextPosition := currentPosition + int(v.Length)
+		packAttribute(v, outputBytes[currentPosition:nextPosition])
 		currentPosition = nextPosition
 	}
 }
