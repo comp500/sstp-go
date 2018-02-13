@@ -101,7 +101,7 @@ type sstpAttribute struct {
 	Length      uint16
 }
 
-func handlePacket(input []byte) {
+func handlePacket(input []byte, conn net.Conn) {
 	header := &sstpHeader{}
 
 	header.MajorVersion = input[0] >> 4
@@ -118,12 +118,40 @@ func handlePacket(input []byte) {
 		/*for i := 0; i < int(controlHeader.AttributesLength); i++ {
 
 		}*/
+		sendAckPacket(conn)
 
 		fmt.Printf("hdr: %v", controlHeader)
 		return
 	}
 
 	fmt.Printf("hdr: %v", header)
+}
+
+func packHeader(header sstpHeader, outputBytes []byte) {
+	var version = (header.MajorVersion << 4) + header.MinorVersion
+	outputBytes[0] = version
+	if header.C {
+		outputBytes[1] = 1
+	} else {
+		outputBytes[1] = 0
+	}
+	binary.BigEndian.PutUint16(outputBytes[2:4], header.Length)
+}
+
+func packControl(header sstpControlHeader, outputBytes []byte) {
+	packHeader(header.sstpHeader, outputBytes[0:4])
+	binary.BigEndian.PutUint16(outputBytes[4:6], uint16(header.MessageType))
+	binary.BigEndian.PutUint16(outputBytes[6:8], header.AttributesLength)
+}
+
+func sendAckPacket(conn net.Conn) {
+	header := sstpHeader{1, 0, true, 8}
+	var attributes []sstpAttribute
+	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, 0, attributes, nil}
+
+	outputBytes := make([]byte, 8)
+	packControl(controlHeader, outputBytes)
+	conn.Write(outputBytes)
 }
 
 func main() {
@@ -207,7 +235,7 @@ func main() {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
 					log.Printf("%s\n", data)
-					handlePacket(data)
+					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					log.Fatalf("%s\n", err)
 					// handle our error then exit for loop
