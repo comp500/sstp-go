@@ -128,11 +128,17 @@ func handlePacket(input []byte, conn net.Conn) {
 
 		if controlHeader.MessageType == MessageTypeCallConnectRequest {
 			sendConnectionAckPacket(conn)
+			// TODO: implement Nak?
 		} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 			sendDisconnectAckPacket(conn)
 		} else if controlHeader.MessageType == MessageTypeEchoRequest {
+			// TODO: implement hello timer and echo request?
 			sendEchoResponsePacket(conn)
+		} else if controlHeader.MessageType == MessageTypeCallAbort {
+			// TODO: parse error
+			log.Fatal("error encountered, connection aborted")
 		}
+		// TODO: implement connected
 		return
 	}
 
