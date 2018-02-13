@@ -102,6 +102,11 @@ type sstpAttribute struct {
 	Data        []byte
 }
 
+type sstpDataHeader struct {
+	sstpHeader
+	Data []byte // dummy?
+}
+
 func handlePacket(input []byte, conn net.Conn) {
 	header := &sstpHeader{}
 
@@ -125,7 +130,11 @@ func handlePacket(input []byte, conn net.Conn) {
 		return
 	}
 
-	fmt.Printf("hdr: %v", header)
+	dataHeader := &sstpDataHeader{}
+	dataHeader.sstpHeader = *header
+	copy(input[4:(len(input)-4)], dataHeader.Data)
+
+	fmt.Printf("hdr: %v", dataHeader)
 }
 
 func packHeader(header sstpHeader, outputBytes []byte) {
