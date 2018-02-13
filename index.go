@@ -130,6 +130,8 @@ func handlePacket(input []byte, conn net.Conn) {
 			sendConnectionAckPacket(conn)
 		} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 			sendDisconnectAckPacket(conn)
+		} else if controlHeader.MessageType == MessageTypeEchoRequest {
+			sendEchoResponsePacket(conn)
 		}
 		return
 	}
@@ -188,6 +190,17 @@ func sendDisconnectAckPacket(conn net.Conn) {
 	header := sstpHeader{1, 0, true, 8}
 	attributes := make([]sstpAttribute, 0)
 	controlHeader := sstpControlHeader{header, MessageTypeCallDisconnectAck, 0, attributes, nil}
+
+	log.Printf("write: %v\n", controlHeader)
+	outputBytes := make([]byte, 8)
+	packControlHeader(controlHeader, outputBytes)
+	conn.Write(outputBytes)
+}
+
+func sendEchoResponsePacket(conn net.Conn) {
+	header := sstpHeader{1, 0, true, 8}
+	attributes := make([]sstpAttribute, 0)
+	controlHeader := sstpControlHeader{header, MessageTypeEchoResponse, 0, attributes, nil}
 
 	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 8)
