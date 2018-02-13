@@ -194,7 +194,7 @@ func sendConnectionAckPacket(conn net.Conn) {
 	header := sstpHeader{1, 0, true, 48}
 	attributes := make([]sstpAttribute, 1)
 	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, nil}
-	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, uint16(len(attributes)), attributes, nil}
+	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, uint16(len(attributes)), attributes}
 
 	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 48)
@@ -205,7 +205,7 @@ func sendConnectionAckPacket(conn net.Conn) {
 func sendDisconnectAckPacket(conn net.Conn) {
 	header := sstpHeader{1, 0, true, 8}
 	attributes := make([]sstpAttribute, 0)
-	controlHeader := sstpControlHeader{header, MessageTypeCallDisconnectAck, 0, attributes, nil}
+	controlHeader := sstpControlHeader{header, MessageTypeCallDisconnectAck, 0, attributes}
 
 	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 8)
@@ -216,7 +216,7 @@ func sendDisconnectAckPacket(conn net.Conn) {
 func sendEchoResponsePacket(conn net.Conn) {
 	header := sstpHeader{1, 0, true, 8}
 	attributes := make([]sstpAttribute, 0)
-	controlHeader := sstpControlHeader{header, MessageTypeEchoResponse, 0, attributes, nil}
+	controlHeader := sstpControlHeader{header, MessageTypeEchoResponse, 0, attributes}
 
 	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 8)
