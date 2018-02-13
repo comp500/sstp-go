@@ -108,7 +108,7 @@ type sstpDataHeader struct {
 }
 
 func handlePacket(input []byte, conn net.Conn) {
-	header := &sstpHeader{}
+	header := sstpHeader{}
 
 	header.MajorVersion = input[0] >> 4
 	header.MinorVersion = input[0] & 0xf
@@ -116,8 +116,8 @@ func handlePacket(input []byte, conn net.Conn) {
 	header.Length = binary.BigEndian.Uint16(input[2:4])
 
 	if header.C {
-		controlHeader := &sstpControlHeader{}
-		controlHeader.sstpHeader = *header
+		controlHeader := sstpControlHeader{}
+		controlHeader.sstpHeader = header
 		controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[4:6]))
 		controlHeader.AttributesLength = binary.BigEndian.Uint16(input[6:8])
 
@@ -129,8 +129,8 @@ func handlePacket(input []byte, conn net.Conn) {
 		return
 	}
 
-	dataHeader := &sstpDataHeader{}
-	dataHeader.sstpHeader = *header
+	dataHeader := sstpDataHeader{}
+	dataHeader.sstpHeader = header
 	dataHeader.Data = input[4:(len(input) - 4)]
 
 	log.Printf("read: %v\n", dataHeader)
