@@ -125,7 +125,12 @@ func handlePacket(input []byte, conn net.Conn) {
 
 		}*/
 		log.Printf("read: %v\n", controlHeader)
-		sendAckPacket(conn)
+
+		if controlHeader.MessageType == MessageTypeCallConnectRequest {
+			sendConnectionAckPacket(conn)
+		} else if controlHeader.MessageType == MessageTypeCallDisconnect {
+			sendDisconnectAckPacket(conn)
+		}
 		return
 	}
 
@@ -166,8 +171,8 @@ func packControlHeader(header sstpControlHeader, outputBytes []byte) {
 	}
 }
 
-func sendAckPacket(conn net.Conn) {
-	// Fake length = 48, we don't actually implement crypto binding?
+func sendConnectionAckPacket(conn net.Conn) {
+	// Fake attribute, we don't actually implement crypto binding
 	header := sstpHeader{1, 0, true, 48}
 	attributes := make([]sstpAttribute, 1)
 	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, nil}
@@ -175,6 +180,17 @@ func sendAckPacket(conn net.Conn) {
 
 	log.Printf("write: %v\n", controlHeader)
 	outputBytes := make([]byte, 48)
+	packControlHeader(controlHeader, outputBytes)
+	conn.Write(outputBytes)
+}
+
+func sendDisconnectAckPacket(conn net.Conn) {
+	header := sstpHeader{1, 0, true, 8}
+	attributes := make([]sstpAttribute, 0)
+	controlHeader := sstpControlHeader{header, MessageTypeCallDisconnectAck, 0, attributes, nil}
+
+	log.Printf("write: %v\n", controlHeader)
+	outputBytes := make([]byte, 8)
 	packControlHeader(controlHeader, outputBytes)
 	conn.Write(outputBytes)
 }
