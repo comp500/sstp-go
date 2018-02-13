@@ -126,15 +126,15 @@ func handlePacket(input []byte, conn net.Conn) {
 		}*/
 		sendAckPacket(conn)
 
-		fmt.Printf("hdr: %v", controlHeader)
+		fmt.Printf("hdr: %v\n", controlHeader)
 		return
 	}
 
 	dataHeader := &sstpDataHeader{}
 	dataHeader.sstpHeader = *header
-	copy(input[4:(len(input)-4)], dataHeader.Data)
+	dataHeader.Data = input[4:(len(input) - 4)]
 
-	fmt.Printf("hdr: %v", dataHeader)
+	fmt.Printf("hdr: %v\n", dataHeader)
 }
 
 func packHeader(header sstpHeader, outputBytes []byte) {
@@ -259,7 +259,7 @@ func main() {
 				select {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
-					log.Printf("%s\n", data)
+					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					log.Fatalf("%s\n", err)
