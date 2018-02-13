@@ -66,7 +66,7 @@ type sstpControlHeader struct {
 	MessageType      MessageType
 	AttributesLength uint16
 	Attributes       []sstpAttribute
-	Data             interface{}
+	Data             interface{} // dummy?
 }
 
 // AttributeID is the type of attribute this attribute is
@@ -99,6 +99,7 @@ type sstpAttribute struct {
 	Reserved    byte
 	AttributeID AttributeID
 	Length      uint16
+	Data        []byte
 }
 
 func handlePacket(input []byte, conn net.Conn) {
@@ -138,19 +139,34 @@ func packHeader(header sstpHeader, outputBytes []byte) {
 	binary.BigEndian.PutUint16(outputBytes[2:4], header.Length)
 }
 
-func packControl(header sstpControlHeader, outputBytes []byte) {
+func packAttribute(attribute sstpAttribute, outputBytes []byte) {
+	// Don't set 0, should be reserved
+	binary.BigEndian.PutUint16(outputBytes[1:3], uint16(attribute.AttributeID))
+	binary.BigEndian.PutUint16(outputBytes[3:5], attribute.Length)
+	attribute.Data = outputBytes[5:(len(outputBytes) - 5)]
+}
+
+func packControlHeader(header sstpControlHeader, outputBytes []byte) {
 	packHeader(header.sstpHeader, outputBytes[0:4])
 	binary.BigEndian.PutUint16(outputBytes[4:6], uint16(header.MessageType))
 	binary.BigEndian.PutUint16(outputBytes[6:8], header.AttributesLength)
+	currentPosition := 8
+	for i := 0; i < len(header.Attributes); i++ {
+		nextPosition := currentPosition + int(header.Attributes[i].Length)
+		packAttribute(header.Attributes[i], outputBytes[currentPosition:nextPosition])
+		currentPosition = nextPosition
+	}
 }
 
 func sendAckPacket(conn net.Conn) {
-	header := sstpHeader{1, 0, true, 8}
-	var attributes []sstpAttribute
-	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, 0, attributes, nil}
+	// Fake length = 48, we don't actually implement crypto binding?
+	header := sstpHeader{1, 0, true, 48}
+	attributes := make([]sstpAttribute, 1)
+	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, nil}
+	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, uint16(len(attributes)), attributes, nil}
 
-	outputBytes := make([]byte, 8)
-	packControl(controlHeader, outputBytes)
+	outputBytes := make([]byte, 48)
+	packControlHeader(controlHeader, outputBytes)
 	conn.Write(outputBytes)
 }
 
