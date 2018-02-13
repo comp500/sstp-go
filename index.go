@@ -66,7 +66,6 @@ type sstpControlHeader struct {
 	MessageType      MessageType
 	AttributesLength uint16
 	Attributes       []sstpAttribute
-	Data             interface{} // dummy?
 }
 
 // AttributeID is the type of attribute this attribute is
@@ -121,9 +120,20 @@ func handlePacket(input []byte, conn net.Conn) {
 		controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[4:6]))
 		controlHeader.AttributesLength = binary.BigEndian.Uint16(input[6:8])
 
-		/*for i := 0; i < int(controlHeader.AttributesLength); i++ {
+		attributes := make([]sstpAttribute, int(controlHeader.AttributesLength))
+		consumedBytes := 8
+		for i := 0; i < len(attributes); i++ {
+			attribute := sstpAttribute{}
+			// ignore Reserved byte
+			attribute.AttributeID = AttributeID(input[consumedBytes+1])
+			attribute.Length = binary.BigEndian.Uint16(input[(consumedBytes + 2):(consumedBytes + 4)])
+			attribute.Data = input[(consumedBytes + 4):(consumedBytes + int(attribute.Length))]
+			consumedBytes += int(attribute.Length)
 
-		}*/
+			attributes[i] = attribute
+		}
+		controlHeader.Attributes = attributes
+
 		log.Printf("read: %v\n", controlHeader)
 
 		if controlHeader.MessageType == MessageTypeCallConnectRequest {
