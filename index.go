@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 )
@@ -296,7 +295,9 @@ func main() {
 			}
 
 			// digest rest of first packet
-			ioutil.ReadAll(c)
+			data := make([]byte, 512)
+			conn.Read(data)
+			data = nil // free memory
 
 			log.Print("HTTP request received")
 
