@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"log"
 	"net"
 )
@@ -84,5 +85,6 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 	log.Printf("write: %v\n", dataHeader)
 	packetBytes := make([]byte, length)
 	packDataHeader(dataHeader, packetBytes)
+	log.Printf("write: %v\n", hex.Dump(packetBytes))
 	conn.Write(packetBytes)
 }
