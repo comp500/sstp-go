@@ -74,7 +74,7 @@ func sendEchoResponsePacket(conn net.Conn) {
 
 func packDataHeader(header sstpDataHeader, outputBytes []byte) {
 	packHeader(header.sstpHeader, outputBytes[0:4])
-	copy(header.Data, outputBytes[4:(len(header.Data)-4)])
+	copy(header.Data, outputBytes[4:(len(header.Data)+4)])
 }
 
 func sendDataPacket(inputBytes []byte, conn net.Conn) {
