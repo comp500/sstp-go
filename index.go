@@ -148,7 +148,7 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 
 	dataHeader := sstpDataHeader{}
 	dataHeader.sstpHeader = header
-	dataHeader.Data = input[4:(len(input) - 4)]
+	dataHeader.Data = input[4:(header.Length - 4)]
 
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
@@ -301,7 +301,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 				return
 			}
 			// send data if we read some.
-			ch <- data
+			ch <- data[0:n]
 		}
 	}(ch, eCh, pppdInstance.stdout)
 
