@@ -279,11 +279,11 @@ func addPPPDResponder(pppdInstance *exec.Cmd, conn net.Conn) {
 		pppdOut, _ := pppdInstance.StdoutPipe()
 
 		// Start a goroutine to read from our net connection
-		go func(ch chan []byte, eCh chan error, pppdOut io.ReadCloser) {
+		go func(ch chan []byte, eCh chan error, pppdOut *io.ReadCloser) {
 			for {
 				// try to read the data
 				data := make([]byte, 512)
-				n, err := pppdOut.Read(data)
+				n, err := (*pppdOut).Read(data)
 				fmt.Printf("pppd: %v bytes read", n)
 
 				if err != nil {
@@ -294,7 +294,7 @@ func addPPPDResponder(pppdInstance *exec.Cmd, conn net.Conn) {
 				// send data if we read some.
 				ch <- data
 			}
-		}(ch, eCh, pppdOut)
+		}(ch, eCh, &pppdOut)
 
 		//ticker := time.Tick(time.Second)
 		// continuously read from the connection
