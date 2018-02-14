@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"encoding/hex"
-	"fmt"
 	"log"
 	"net"
 )
@@ -53,8 +51,6 @@ func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pp
 		log.Fatal("pppd instance not started")
 	} else {
 		n, err := pppdInstance.stdin.Write(pppEscape(dataHeader.Data))
-		fmt.Print(hex.Dump(dataHeader.Data))
-		fmt.Print(hex.Dump(pppEscape(dataHeader.Data)))
 		handleErr(err)
 		log.Printf("%v bytes written to pppd", n)
 	}
