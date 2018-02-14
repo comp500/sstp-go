@@ -419,7 +419,7 @@ func main() {
 
 			ch := make(chan []byte)
 			eCh := make(chan error)
-			var pppdInstance **exec.Cmd // store null pointer to future pppd instance
+			pppdInstance := new(*exec.Cmd) // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
 			go func(ch chan []byte, eCh chan error) {
@@ -447,6 +447,9 @@ func main() {
 					handlePacket(data, conn, pppdInstance)
 					if pppdInstance == nil {
 						log.Fatal("pppd instance not started test2")
+					}
+					if *pppdInstance == nil {
+						log.Fatal("pppd instance not started test3")
 					}
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
