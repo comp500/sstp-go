@@ -150,10 +150,6 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 	dataHeader.sstpHeader = header
 	dataHeader.Data = input[4:(len(input) - 4)]
 
-	if pppdInstance.commandInst == nil {
-		log.Fatal("pppd instance not started test")
-	}
-
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
 
@@ -178,9 +174,6 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// however there is only PPP currently, so not a problem
 		createPPPD(pppdInstance)
 		log.Print("pppd instance created")
-		if pppdInstance.commandInst == nil {
-			log.Print("instanceptr is nil")
-		}
 		go addPPPDResponder(pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 		sendDisconnectAckPacket(conn)
@@ -276,7 +269,7 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 }
 
 func createPPPD(pppdInstance *pppdInstance) {
-	pppdCmd := exec.Command("pppd", "notty")
+	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200", "10.0.0.1:10.0.0.0/24")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
 	pppdOut, err := pppdCmd.StdoutPipe()
@@ -300,7 +293,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 			// try to read the data
 			data := make([]byte, 512)
 			n, err := pppdOut.Read(data)
-			fmt.Printf("pppd: %v bytes read", n)
+			log.Printf("pppd: %v bytes read", n)
 
 			if err != nil {
 				// send an error if it's encountered
@@ -356,11 +349,6 @@ func main() {
 		go func(c net.Conn) {
 			// Shut down the connection.
 			defer c.Close()
-
-			// Echo all incoming data.
-			//io.Copy(c, c)
-
-			//b, err := ioutil.ReadAll(c)
 
 			var method, path, version string
 			n, err := fmt.Fscan(c, &method, &path, &version)
