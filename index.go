@@ -260,11 +260,11 @@ func main() {
 				return
 			}
 			if method != "SSTP_DUPLEX_POST" {
-				log.Print("Wrong method.")
+				log.Printf("Wrong method (%s)", method)
 				return
 			}
 			if path != "/sra_{BA195980-CD49-458b-9E23-C84EE0ADCD75}/" {
-				log.Print("Wrong path.")
+				log.Printf("Wrong path (%s)", path)
 				return
 			}
 
@@ -272,7 +272,7 @@ func main() {
 			data := make([]byte, 512)
 			conn.Read(data)
 
-			log.Print("Read HTTP request.")
+			log.Print("HTTP request received")
 
 			n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n\r\n",
 				"HTTP/1.1 200 OK",
@@ -310,7 +310,9 @@ func main() {
 					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
-					if err != io.EOF {
+					if err == io.EOF {
+						log.Print("Client disconnected")
+					} else {
 						log.Fatalf("%s\n", err)
 						// handle our error then exit for loop
 						break
