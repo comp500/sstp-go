@@ -144,6 +144,10 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance **exec.Cmd) {
 	dataHeader.sstpHeader = header
 	dataHeader.Data = input[4:(len(input) - 4)]
 
+	if pppdInstance == nil {
+		log.Fatal("pppd instance not started test")
+	}
+
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
 
@@ -441,6 +445,9 @@ func main() {
 					// Do something with the data
 					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn, pppdInstance)
+					if pppdInstance == nil {
+						log.Fatal("pppd instance not started test2")
+					}
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
 						log.Print("Client disconnected")
