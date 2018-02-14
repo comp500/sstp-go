@@ -148,7 +148,7 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 
 	dataHeader := sstpDataHeader{}
 	dataHeader.sstpHeader = header
-	dataHeader.Data = input[4:(header.Length - 4)]
+	dataHeader.Data = input[4:header.Length]
 
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
