@@ -277,8 +277,8 @@ func main() {
 			log.Printf("%v HTTP bytes read", n)
 
 			// digest rest of first packet
-			data := make([]byte, 512)
-			conn.Read(data)
+			//data := make([]byte, 512)
+			//conn.Read(data)
 
 			ch := make(chan []byte)
 			eCh := make(chan error)
