@@ -276,7 +276,7 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 }
 
 func createPPPD(pppdInstance *pppdInstance) {
-	pppdCmd := exec.Command("pppd")
+	pppdCmd := exec.Command("pppd", "notty")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
 	pppdOut, err := pppdCmd.StdoutPipe()
