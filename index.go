@@ -269,7 +269,7 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 }
 
 func createPPPD(pppdInstance *pppdInstance) {
-	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200", "10.0.0.1:10.0.0.2")
+	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
 	pppdOut, err := pppdCmd.StdoutPipe()
@@ -441,6 +441,11 @@ func main() {
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
 						log.Print("Client disconnected")
+						if pppdInstance.commandInst != nil {
+							// kill pppd if disconnect
+							err := pppdInstance.commandInst.Process.Kill()
+							handleErr(err)
+						}
 					} else {
 						log.Fatalf("%s\n", err)
 						// handle our error then exit for loop
