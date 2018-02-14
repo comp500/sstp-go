@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"net"
@@ -272,6 +271,8 @@ func main() {
 			data := make([]byte, 512)
 			conn.Read(data)
 
+			log.Print("Read HTTP request.")
+
 			n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n\r\n",
 				"HTTP/1.1 200 OK",
 				"Date: Thu, 09 Nov 2006 00:51:09 GMT",
@@ -305,7 +306,7 @@ func main() {
 				select {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
-					log.Printf("%s\n", hex.Dump(data))
+					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					log.Fatalf("%s\n", err)
