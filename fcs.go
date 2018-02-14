@@ -97,7 +97,7 @@ func pppEscape(inputBytes []byte) []byte {
 	currentPos++
 
 	// TODO: check if FCS is good?
-	return outputBytes
+	return outputBytes[0:currentPos]
 }
 
 func pppUnescape(inputBytes []byte) [][]byte {
