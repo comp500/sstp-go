@@ -81,7 +81,7 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 	header := sstpHeader{1, 0, false, uint16(length)}
 	dataHeader := sstpDataHeader{header, inputBytes}
 
-	log.Printf("write: %v\n", dataHeader)
+	//log.Printf("write: %v\n", dataHeader)
 	packetBytes := make([]byte, length)
 	packDataHeader(dataHeader, packetBytes)
 	conn.Write(packetBytes)

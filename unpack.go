@@ -52,7 +52,7 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 }
 
 func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pppdInstance) {
-	log.Printf("read: %v\n", dataHeader)
+	//log.Printf("read: %v\n", dataHeader)
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
 	} else {
