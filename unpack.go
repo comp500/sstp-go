@@ -69,6 +69,12 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		go addPPPDResponder(pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 		sendDisconnectAckPacket(conn)
+		if pppdInstance.commandInst != nil {
+			// kill pppd if disconnect
+			err := pppdInstance.commandInst.Process.Kill()
+			handleErr(err)
+			pppdInstance.commandInst = nil
+		}
 	} else if controlHeader.MessageType == MessageTypeEchoRequest {
 		// TODO: implement hello timer and echo request?
 		sendEchoResponsePacket(conn)

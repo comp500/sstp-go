@@ -128,6 +128,7 @@ func main() {
 							// kill pppd if disconnect
 							err := pppdInstance.commandInst.Process.Kill()
 							handleErr(err)
+							pppdInstance.commandInst = nil
 						}
 					} else {
 						log.Fatalf("%s\n", err)
