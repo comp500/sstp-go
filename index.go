@@ -268,17 +268,17 @@ func main() {
 				return
 			}
 
+			// digest rest of first packet
+			data := make([]byte, 512)
+			conn.Read(data)
+
 			n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n\r\n",
 				"HTTP/1.1 200 OK",
 				"Date: Thu, 09 Nov 2006 00:51:09 GMT",
 				"Server: Microsoft-HTTPAPI/2.0",
 				"Content-Length: 18446744073709551615")
 			handleErr(err)
-			log.Printf("%v HTTP bytes read", n)
-
-			// digest rest of first packet
-			//data := make([]byte, 512)
-			//conn.Read(data)
+			log.Printf("%v HTTP bytes written", n)
 
 			ch := make(chan []byte)
 			eCh := make(chan error)
