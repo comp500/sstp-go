@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net"
@@ -304,7 +305,7 @@ func main() {
 				select {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
-					//log.Printf("%s\n", hex.Dump(data))
+					log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					log.Fatalf("%s\n", err)
