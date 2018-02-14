@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 )
@@ -228,12 +229,11 @@ func sendEchoResponsePacket(conn net.Conn) {
 }
 
 func main() {
-	// Listen on TCP port 2000 on all available unicast and
-	// anycast IP addresses of the local system.
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Print("Listening on port 8080")
 	defer l.Close()
 	for {
 		// Wait for a connection.
@@ -259,20 +259,44 @@ func main() {
 
 			if n != 3 {
 				log.Print("Malformed HTTP")
+				n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n\r\n%s",
+					"HTTP/1.1 400 Bad Request",
+					"Server: sstp-go",
+					"Connection: close",
+					"Content-Length: 15",
+					"400 Bad Request")
+				handleErr(err)
+				log.Printf("%v HTTP bytes written (400)", n)
 				return
 			}
 			if method != "SSTP_DUPLEX_POST" {
 				log.Printf("Wrong method (%s)", method)
+				n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n\r\n%s",
+					"HTTP/1.1 405 Method Not Allowed",
+					"Allow: SSTP_DUPLEX_POST",
+					"Server: sstp-go",
+					"Connection: close",
+					"Content-Length: 22",
+					"405 Method Not Allowed")
+				handleErr(err)
+				log.Printf("%v HTTP bytes written (405)", n)
 				return
 			}
 			if path != "/sra_{BA195980-CD49-458b-9E23-C84EE0ADCD75}/" {
 				log.Printf("Wrong path (%s)", path)
+				n, err = fmt.Fprintf(c, "%s\r\n%s\r\n%s\r\n%s\r\n\r\n%s",
+					"HTTP/1.1 404 File Not Found",
+					"Server: sstp-go",
+					"Connection: close",
+					"Content-Length: 18",
+					"404 File Not Found")
+				handleErr(err)
+				log.Printf("%v HTTP bytes written (404)", n)
 				return
 			}
 
 			// digest rest of first packet
-			data := make([]byte, 512)
-			conn.Read(data)
+			ioutil.ReadAll(c)
 
 			log.Print("HTTP request received")
 
