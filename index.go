@@ -173,7 +173,7 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// -> if protocols specified by req not supported
 		// however there is only PPP currently, so not a problem
 		pppdInstanceValue := createPPPD()
-		pppdInstance = &pppdInstanceValue
+		*pppdInstance = pppdInstanceValue
 		log.Print("pppd instance created")
 		if pppdInstance == nil {
 			log.Print("instanceptr is nil")
