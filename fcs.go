@@ -54,11 +54,11 @@ func pppEscape(inputBytes []byte) []byte {
 	outputBytes[0] = flagSequence
 	currentPos++
 
-	for _, v := range inputBytes {
+	for i, v := range inputBytes {
 		// black magic
 		fcs = fcs>>8 ^ int(fcstab[(fcs^int(v))&0xff])
 		// escape byte
-		if v < 0x20 || v == flagSequence || v == controlEscape {
+		if i > 2 && (v < 0x20 || v == flagSequence || v == controlEscape) {
 			outputBytes[currentPos] = controlEscape
 			currentPos++
 			outputBytes[currentPos] = v ^ 0x20
