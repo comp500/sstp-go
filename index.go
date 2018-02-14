@@ -108,7 +108,7 @@ type sstpDataHeader struct {
 	Data []byte
 }
 
-func handlePacket(input []byte, conn net.Conn, pppdInstance *exec.Cmd) {
+func handlePacket(input []byte, conn net.Conn, pppdInstance **exec.Cmd) {
 	header := sstpHeader{}
 
 	header.MajorVersion = input[0] >> 4
@@ -147,19 +147,19 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *exec.Cmd) {
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
 
-func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *exec.Cmd) {
+func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance **exec.Cmd) {
 	log.Printf("read: %v\n", dataHeader)
 	if pppdInstance == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		pppIn, _ := pppdInstance.StdinPipe()
+		pppIn, _ := (*pppdInstance).StdinPipe()
 		n, err := pppIn.Write(dataHeader.Data)
 		handleErr(err)
 		log.Printf("%v bytes written to pppd", n)
 	}
 }
 
-func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdInstance *exec.Cmd) {
+func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdInstance **exec.Cmd) {
 	log.Printf("read: %v\n", controlHeader)
 
 	if controlHeader.MessageType == MessageTypeCallConnectRequest {
@@ -167,12 +167,13 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// TODO: implement Nak?
 		// -> if protocols specified by req not supported
 		// however there is only PPP currently, so not a problem
-		pppdInstance = createPPPD()
+		pppdInstanceValue := createPPPD()
+		pppdInstance = &(pppdInstanceValue)
 		log.Print("pppd instance created")
 		if pppdInstance == nil {
 			log.Print("instanceptr is nil")
 		}
-		addPPPDResponder(pppdInstance, conn)
+		addPPPDResponder(*pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 		sendDisconnectAckPacket(conn)
 	} else if controlHeader.MessageType == MessageTypeEchoRequest {
@@ -410,7 +411,7 @@ func main() {
 
 			ch := make(chan []byte)
 			eCh := make(chan error)
-			var pppdInstance *exec.Cmd // store null pointer to future pppd instance
+			var pppdInstance **exec.Cmd // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
 			go func(ch chan []byte, eCh chan error) {
