@@ -276,7 +276,8 @@ func addPPPDResponder(pppdInstance *exec.Cmd, conn net.Conn) {
 
 		ch := make(chan []byte)
 		eCh := make(chan error)
-		pppdOut, _ := pppdInstance.StdoutPipe()
+		pppdOut, err := pppdInstance.StdoutPipe()
+		handleErr(err)
 
 		// Start a goroutine to read from our net connection
 		go func(ch chan []byte, eCh chan error, pppdOut *io.ReadCloser) {
