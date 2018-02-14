@@ -114,7 +114,7 @@ type pppdInstance struct {
 	stdout      io.ReadCloser
 }
 
-func handlePacket(input []byte, conn net.Conn, pppdInstance pppdInstance) {
+func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 	header := sstpHeader{}
 
 	header.MajorVersion = input[0] >> 4
@@ -157,7 +157,7 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance pppdInstance) {
 	handleDataPacket(dataHeader, conn, pppdInstance)
 }
 
-func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance pppdInstance) {
+func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pppdInstance) {
 	log.Printf("read: %v\n", dataHeader)
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
@@ -168,7 +168,7 @@ func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance ppp
 	}
 }
 
-func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdInstance pppdInstance) {
+func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdInstance *pppdInstance) {
 	log.Printf("read: %v\n", controlHeader)
 
 	if controlHeader.MessageType == MessageTypeCallConnectRequest {
@@ -275,7 +275,7 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 	conn.Write(packetBytes)
 }
 
-func createPPPD(pppdInstance pppdInstance) {
+func createPPPD(pppdInstance *pppdInstance) {
 	pppdCmd := exec.Command("pppd")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
@@ -288,7 +288,7 @@ func createPPPD(pppdInstance pppdInstance) {
 	pppdInstance.stdout = pppdOut
 }
 
-func addPPPDResponder(pppdInstance pppdInstance, conn net.Conn) {
+func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 	defer pppdInstance.commandInst.Process.Kill()
 
 	ch := make(chan []byte)
@@ -446,7 +446,7 @@ func main() {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
 					//log.Printf("%s\n", hex.Dump(data))
-					handlePacket(data, conn, pppdInstance)
+					handlePacket(data, conn, &pppdInstance)
 					if pppdInstance.commandInst == nil {
 						log.Fatal("pppd instance not started test2")
 					}
