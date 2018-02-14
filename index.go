@@ -167,7 +167,7 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// TODO: implement Nak?
 		// -> if protocols specified by req not supported
 		// however there is only PPP currently, so not a problem
-		pppdInstance = createPPPD()
+		*pppdInstance = *createPPPD()
 		log.Print("pppd instance created")
 		addPPPDResponder(pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
@@ -280,11 +280,11 @@ func addPPPDResponder(pppdInstance *exec.Cmd, conn net.Conn) {
 		handleErr(err)
 
 		// Start a goroutine to read from our net connection
-		go func(ch chan []byte, eCh chan error, pppdOut *io.ReadCloser) {
+		go func(ch chan []byte, eCh chan error, pppdOut io.ReadCloser) {
 			for {
 				// try to read the data
 				data := make([]byte, 512)
-				n, err := (*pppdOut).Read(data)
+				n, err := pppdOut.Read(data)
 				fmt.Printf("pppd: %v bytes read", n)
 
 				if err != nil {
@@ -295,7 +295,7 @@ func addPPPDResponder(pppdInstance *exec.Cmd, conn net.Conn) {
 				// send data if we read some.
 				ch <- data
 			}
-		}(ch, eCh, &pppdOut)
+		}(ch, eCh, pppdOut)
 
 		//ticker := time.Tick(time.Second)
 		// continuously read from the connection
