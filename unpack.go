@@ -14,6 +14,12 @@ func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
 	header.C = input[1] == 1
 	header.Length = binary.BigEndian.Uint16(input[2:4])
 
+	if int(header.Length) > len(input) {
+		// TODO: handle long length packets???
+		log.Print("Packet dropped, invalid length")
+		return
+	}
+
 	if header.C {
 		controlHeader := sstpControlHeader{}
 		controlHeader.sstpHeader = header
