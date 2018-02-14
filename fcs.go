@@ -99,3 +99,33 @@ func pppEscape(inputBytes []byte) []byte {
 	// TODO: check if FCS is good?
 	return outputBytes
 }
+
+func pppUnescape(inputBytes []byte) [][]byte {
+	currentPos := 0
+	escaped := false
+	var packets [][]byte
+	currentPacket := make([]byte, maxFrameSize)
+
+	for _, v := range inputBytes {
+		if escaped {
+			escaped = false
+			currentPacket[currentPos] = v ^ 0x20
+			currentPos++
+		} else if v == controlEscape {
+			escaped = true
+		} else if v == flagSequence {
+			if currentPos > 4 {
+				/* Ignore 2 byte FCS field */
+				packets = append(packets, currentPacket)
+				currentPacket = make([]byte, maxFrameSize)
+				currentPos = 0
+			}
+		} else if currentPos < maxFrameSize {
+			currentPacket[currentPos] = v
+			currentPos++
+		}
+	}
+
+	// TODO: check if FCS is good?
+	return packets
+}
