@@ -104,7 +104,7 @@ type sstpAttribute struct {
 
 type sstpDataHeader struct {
 	sstpHeader
-	Data []byte // dummy?
+	Data []byte
 }
 
 func handlePacket(input []byte, conn net.Conn) {
@@ -135,23 +135,7 @@ func handlePacket(input []byte, conn net.Conn) {
 		}
 		controlHeader.Attributes = attributes
 
-		log.Printf("read: %v\n", controlHeader)
-
-		if controlHeader.MessageType == MessageTypeCallConnectRequest {
-			sendConnectionAckPacket(conn)
-			// TODO: implement Nak?
-			// -> if protocols specified by req not supported
-			// however there is only PPP currently, so not a problem
-		} else if controlHeader.MessageType == MessageTypeCallDisconnect {
-			sendDisconnectAckPacket(conn)
-		} else if controlHeader.MessageType == MessageTypeEchoRequest {
-			// TODO: implement hello timer and echo request?
-			sendEchoResponsePacket(conn)
-		} else if controlHeader.MessageType == MessageTypeCallAbort {
-			// TODO: parse error
-			log.Fatal("error encountered, connection aborted")
-		}
-		// TODO: implement connected
+		handleControlPacket(controlHeader, conn)
 		return
 	}
 
@@ -159,7 +143,31 @@ func handlePacket(input []byte, conn net.Conn) {
 	dataHeader.sstpHeader = header
 	dataHeader.Data = input[4:(len(input) - 4)]
 
+	handleDataPacket(dataHeader, conn)
+}
+
+func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn) {
 	log.Printf("read: %v\n", dataHeader)
+}
+
+func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn) {
+	log.Printf("read: %v\n", controlHeader)
+
+	if controlHeader.MessageType == MessageTypeCallConnectRequest {
+		sendConnectionAckPacket(conn)
+		// TODO: implement Nak?
+		// -> if protocols specified by req not supported
+		// however there is only PPP currently, so not a problem
+	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
+		sendDisconnectAckPacket(conn)
+	} else if controlHeader.MessageType == MessageTypeEchoRequest {
+		// TODO: implement hello timer and echo request?
+		sendEchoResponsePacket(conn)
+	} else if controlHeader.MessageType == MessageTypeCallAbort {
+		// TODO: parse error
+		log.Fatal("error encountered, connection aborted")
+	}
+	// TODO: implement connected
 }
 
 func packHeader(header sstpHeader, outputBytes []byte) {
