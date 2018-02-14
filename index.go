@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -309,14 +310,16 @@ func main() {
 					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
-					log.Fatalf("%s\n", err)
-					// handle our error then exit for loop
-					break
-					// This will timeout on the read.
-					//case <-ticker:
-					// do nothing? this is just so we can time out if we need to.
-					// you probably don't even need to have this here unless you want
-					// do something specifically on the timeout.
+					if err != io.EOF {
+						log.Fatalf("%s\n", err)
+						// handle our error then exit for loop
+						break
+						// This will timeout on the read.
+						//case <-ticker:
+						// do nothing? this is just so we can time out if we need to.
+						// you probably don't even need to have this here unless you want
+						// do something specifically on the timeout.
+					}
 				}
 			}
 		}(conn)
