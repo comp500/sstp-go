@@ -169,6 +169,9 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// however there is only PPP currently, so not a problem
 		*pppdInstance = *createPPPD()
 		log.Print("pppd instance created")
+		if pppdInstance == nil {
+			log.Print("instanceptr is nil")
+		}
 		addPPPDResponder(pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 		sendDisconnectAckPacket(conn)
