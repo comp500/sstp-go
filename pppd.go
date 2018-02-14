@@ -53,6 +53,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 		case data := <-ch: // This case means we recieved data on the connection
 			// Do something with the data
 			//log.Printf("%s\n", hex.Dump(data))
+			fmt.Print(hex.Dump(data))
 			packets := pppUnescape(data)
 			for _, v := range packets {
 				fmt.Print(hex.Dump(v))
