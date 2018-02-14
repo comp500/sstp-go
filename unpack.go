@@ -52,16 +52,10 @@ func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pp
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		/*n, err := pppdInstance.stdin.Write(pppEscape(dataHeader.Data))
+		n, err := pppdInstance.stdin.Write(pppEscape(dataHeader.Data))
 		fmt.Print(hex.Dump(dataHeader.Data))
-		handleErr(err)*/
-		packets := pppUnescape(dataHeader.Data)
-		for _, v := range packets {
-			n, err := pppdInstance.stdin.Write(v)
-			fmt.Print(hex.Dump(v))
-			handleErr(err)
-			log.Printf("%v bytes written to pppd", n)
-		}
+		handleErr(err)
+		log.Printf("%v bytes written to pppd", n)
 	}
 }
 

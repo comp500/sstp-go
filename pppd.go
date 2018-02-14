@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -51,12 +53,11 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 		case data := <-ch: // This case means we recieved data on the connection
 			// Do something with the data
 			//log.Printf("%s\n", hex.Dump(data))
-			/*packets := pppUnescape(data)
+			packets := pppUnescape(data)
 			for _, v := range packets {
 				sendDataPacket(v, conn)
 				fmt.Print(hex.Dump(v))
-			}*/
-			sendDataPacket(pppEscape(data), conn)
+			}
 		case err := <-eCh: // This case means we got an error and the goroutine has finished
 			if err == io.EOF {
 				log.Print("pppd disconnected")
