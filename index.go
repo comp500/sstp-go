@@ -140,6 +140,8 @@ func handlePacket(input []byte, conn net.Conn) {
 		if controlHeader.MessageType == MessageTypeCallConnectRequest {
 			sendConnectionAckPacket(conn)
 			// TODO: implement Nak?
+			// -> if protocols specified by req not supported
+			// however there is only PPP currently, so not a problem
 		} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 			sendDisconnectAckPacket(conn)
 		} else if controlHeader.MessageType == MessageTypeEchoRequest {
