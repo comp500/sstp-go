@@ -55,8 +55,8 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 			//log.Printf("%s\n", hex.Dump(data))
 			packets := pppUnescape(data)
 			for _, v := range packets {
-				sendDataPacket(v, conn)
 				fmt.Print(hex.Dump(v))
+				sendDataPacket(v, conn)
 			}
 		case err := <-eCh: // This case means we got an error and the goroutine has finished
 			if err == io.EOF {
