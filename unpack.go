@@ -50,10 +50,8 @@ func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pp
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		escaped := pppEscape(dataHeader.Data)
-		n, err := pppdInstance.stdin.Write(escaped)
+		n, err := pppdInstance.stdin.Write(pppEscape(dataHeader.Data))
 		handleErr(err)
-		log.Printf("escaped: %v", escaped)
 		log.Printf("%v bytes written to pppd", n)
 	}
 }
