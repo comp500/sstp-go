@@ -8,7 +8,7 @@ import (
 )
 
 func createPPPD(pppdInstance *pppdInstance) {
-	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200")
+	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200", "passive")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
 	pppdOut, err := pppdCmd.StdoutPipe()
