@@ -152,7 +152,8 @@ func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance **e
 	if pppdInstance == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		pppIn, _ := (*pppdInstance).StdinPipe()
+		pppIn, err := (*pppdInstance).StdinPipe()
+		handleErr(err)
 		n, err := pppIn.Write(dataHeader.Data)
 		handleErr(err)
 		log.Printf("%v bytes written to pppd", n)
