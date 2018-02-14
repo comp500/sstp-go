@@ -86,5 +86,6 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 	packetBytes := make([]byte, length)
 	packDataHeader(dataHeader, packetBytes)
 	log.Printf("write: %v\n", hex.Dump(packetBytes))
+	log.Printf("write: %v\n", dataHeader.Data)
 	conn.Write(packetBytes)
 }
