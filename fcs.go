@@ -116,7 +116,7 @@ func pppUnescape(inputBytes []byte) [][]byte {
 		} else if v == flagSequence {
 			if currentPos > 4 {
 				/* Ignore 2 byte FCS field */
-				packets = append(packets, currentPacket)
+				packets = append(packets, currentPacket[0:currentPos])
 				currentPacket = make([]byte, maxFrameSize)
 				currentPos = 0
 			}
