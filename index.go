@@ -118,9 +118,6 @@ func main() {
 					// Do something with the data
 					//log.Printf("%s\n", hex.Dump(data))
 					handlePacket(data, conn, &pppdInstance)
-					if pppdInstance.commandInst == nil {
-						log.Fatal("pppd instance not started test2")
-					}
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
 						log.Print("Client disconnected")
