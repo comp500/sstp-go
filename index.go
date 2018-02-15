@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 )
@@ -98,8 +99,7 @@ func main() {
 			go func(ch chan []byte, eCh chan error) {
 				for {
 					// try to read the data
-					data := make([]byte, 20480)
-					_, err := conn.Read(data)
+					data, err := ioutil.ReadAll(conn)
 					if err != nil {
 						// send an error if it's encountered
 						eCh <- err
