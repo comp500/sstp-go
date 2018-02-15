@@ -7,6 +7,11 @@ import (
 )
 
 func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
+	if len(input) < 4 {
+		log.Print("Packet dropped, not long enough")
+		return
+	}
+
 	header := sstpHeader{}
 
 	header.MajorVersion = input[0] >> 4
