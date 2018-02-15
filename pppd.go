@@ -30,7 +30,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 	go func(ch chan []byte, eCh chan error, pppdOut io.ReadCloser) {
 		for {
 			// try to read the data
-			data := make([]byte, 2048)
+			data := make([]byte, 20480)
 			n, err := pppdOut.Read(data)
 			log.Printf("pppd: %v bytes read", n)
 

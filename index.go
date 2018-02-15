@@ -76,7 +76,7 @@ func main() {
 			}
 
 			// digest rest of first packet
-			data := make([]byte, 2048)
+			data := make([]byte, 20480)
 			conn.Read(data)
 			data = nil // free memory
 
@@ -98,7 +98,7 @@ func main() {
 			go func(ch chan []byte, eCh chan error) {
 				for {
 					// try to read the data
-					data := make([]byte, 2048)
+					data := make([]byte, 20480)
 					_, err := conn.Read(data)
 					if err != nil {
 						// send an error if it's encountered
