@@ -34,20 +34,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 			n, err := pppdOut.Read(data)
 			log.Printf("pppd: %v bytes read", n)
 
-			// If buffer filled, add to it
-			for n == 2048 {
-				dataConcat := make([]byte, len(data), len(data)+2048)
-				copy(dataConcat, data)
-				n, err = conn.Read(dataConcat[len(dataConcat):cap(dataConcat)])
-				data = dataConcat
-				log.Printf("pppd: %v bytes read", n)
-
-				if err != nil {
-					// send an error if it's encountered
-					eCh <- err
-					return
-				}
-			}
+			// TODO implement an object to stream stuff into packet unescaper
 
 			if err != nil {
 				// send an error if it's encountered
