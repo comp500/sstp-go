@@ -28,7 +28,7 @@ func packControlHeader(header sstpControlHeader, outputBytes []byte) {
 	packHeader(header.sstpHeader, outputBytes[0:4])
 	binary.BigEndian.PutUint16(outputBytes[4:6], uint16(header.MessageType))
 	binary.BigEndian.PutUint16(outputBytes[6:8], header.AttributesLength)
-	currentPosition := 8
+	currentPosition := 7
 	for _, v := range header.Attributes {
 		nextPosition := currentPosition + int(v.Length)
 		packAttribute(v, outputBytes[currentPosition:nextPosition])
