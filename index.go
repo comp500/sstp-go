@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -21,8 +20,6 @@ type parseReturn struct {
 	isControl bool
 	Data      []byte
 }
-
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
 	go func() {
