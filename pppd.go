@@ -36,9 +36,10 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 
 			// If buffer filled, add to it
 			for n == 2048 {
-				dataNew := make([]byte, 2048)
-				n, err = conn.Read(dataNew)
-				data = append(data, dataNew...)
+				dataConcat := make([]byte, len(data), len(data)+2048)
+				copy(dataConcat, data)
+				n, err = conn.Read(dataConcat[len(dataConcat):cap(dataConcat)])
+				data = dataConcat
 				log.Printf("pppd: %v bytes read", n)
 
 				if err != nil {
