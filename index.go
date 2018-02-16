@@ -76,7 +76,7 @@ func main() {
 			}
 
 			// digest rest of first packet
-			data := make([]byte, 20480)
+			data := make([]byte, 2048)
 			conn.Read(data)
 			data = nil // free memory
 
