@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -27,14 +26,7 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	cer, err := tls.LoadX509KeyPair("server.crt", "server.key")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	config := &tls.Config{Certificates: []tls.Certificate{cer}}
-	l, err := tls.Listen("tcp", ":8080", config)
+	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
 	}
