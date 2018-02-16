@@ -23,28 +23,16 @@ func (p packetHandler) Write(data []byte) (int, error) {
 }
 
 func createPPPD(pppdInstance *pppdInstance, conn net.Conn) {
-	pr, pw := io.Pipe()
 	pppdCmd := exec.Command("pppd", "notty", "file", "/etc/ppp/options.sstpd", "115200")
 	pppdIn, err := pppdCmd.StdinPipe()
 	handleErr(err)
-	pppdCmd.Stdout = pw
+	pppdCmd.Stdout = pppdInstance.unescaper
 	err = pppdCmd.Start()
 	handleErr(err)
 	pppdInstance.commandInst = pppdCmd
 	pppdInstance.stdin = pppdIn
 
 	go func() {
-		defer pppdInstance.commandInst.Process.Kill()
-		defer pr.Close()
-		defer log.Print("error reading")
-		_, err := io.Copy(pppdInstance.unescaper, pr)
-		if err != nil {
-			log.Print(err)
-		}
-	}()
-
-	go func() {
-		defer pw.Close()
 		defer log.Print("pppd disconnected")
 		pppdCmd.Wait()
 	}()
