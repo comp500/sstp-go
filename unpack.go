@@ -2,66 +2,57 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"log"
 	"net"
 )
 
-func handlePacket(input []byte, conn net.Conn, pppdInstance *pppdInstance) {
+func decodeHeader(input []byte) (bool, int, error) {
 	if len(input) < 4 {
-		log.Print("Packet dropped, not long enough")
-		return
+		log.Print()
+		return true, 0, errors.New("Packet not long enough")
 	}
 
-	header := sstpHeader{}
+	majVer := input[0] >> 4
+	minVer := input[0] & 0xf
+	isControl := input[1] == 1
+	length := int(binary.BigEndian.Uint16(input[2:4]))
 
-	header.MajorVersion = input[0] >> 4
-	header.MinorVersion = input[0] & 0xf
-	header.C = input[1] == 1
-	header.Length = binary.BigEndian.Uint16(input[2:4])
-
-	if header.Length > uint16(len(input)) {
-		// TODO: handle long length packets???
-		log.Print("Packet dropped, invalid length")
-		return
+	if majVer == 1 && minVer == 0 && length > 4 {
+		return isControl, (length - 4), nil
 	}
 
-	if header.C {
-		controlHeader := sstpControlHeader{}
-		controlHeader.sstpHeader = header
-		controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[4:6]))
-		controlHeader.AttributesLength = binary.BigEndian.Uint16(input[6:8])
-
-		attributes := make([]sstpAttribute, int(controlHeader.AttributesLength))
-		consumedBytes := 8
-		for i := 0; i < len(attributes); i++ {
-			attribute := sstpAttribute{}
-			// ignore Reserved byte
-			attribute.AttributeID = AttributeID(input[consumedBytes+1])
-			attribute.Length = binary.BigEndian.Uint16(input[(consumedBytes + 2):(consumedBytes + 4)])
-			attribute.Data = input[(consumedBytes + 4):(consumedBytes + int(attribute.Length))]
-			consumedBytes += int(attribute.Length)
-
-			attributes[i] = attribute
-		}
-		controlHeader.Attributes = attributes
-
-		handleControlPacket(controlHeader, conn, pppdInstance)
-		return
-	}
-
-	dataHeader := sstpDataHeader{}
-	dataHeader.sstpHeader = header
-	dataHeader.Data = input[4:header.Length]
-
-	handleDataPacket(dataHeader, conn, pppdInstance)
+	// isControl, lengthToRead, err
+	return true, 0, errors.New("Invalid packet")
 }
 
-func handleDataPacket(dataHeader sstpDataHeader, conn net.Conn, pppdInstance *pppdInstance) {
+func parseControl(input []byte) sstpControlHeader {
+	controlHeader := sstpControlHeader{}
+	controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[0:2]))
+	controlHeader.AttributesLength = binary.BigEndian.Uint16(input[2:4])
+
+	attributes := make([]sstpAttribute, int(controlHeader.AttributesLength))
+	consumedBytes := 4
+	for i := 0; i < len(attributes); i++ {
+		attribute := sstpAttribute{}
+		// ignore Reserved byte
+		attribute.AttributeID = AttributeID(input[consumedBytes+1])
+		attribute.Length = binary.BigEndian.Uint16(input[(consumedBytes + 2):(consumedBytes + 4)])
+		attribute.Data = input[(consumedBytes + 4):(consumedBytes + int(attribute.Length))]
+		consumedBytes += int(attribute.Length)
+
+		attributes[i] = attribute
+	}
+	controlHeader.Attributes = attributes
+	return controlHeader
+}
+
+func handleDataPacket(data []byte, conn net.Conn, pppdInstance *pppdInstance) {
 	//log.Printf("read: %v\n", dataHeader)
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		n, err := pppdInstance.stdin.Write(pppEscape(dataHeader.Data))
+		n, err := pppdInstance.stdin.Write(pppEscape(data))
 		handleErr(err)
 		log.Printf("%v bytes written to pppd", n)
 	}

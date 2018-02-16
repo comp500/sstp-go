@@ -104,3 +104,8 @@ type pppdInstance struct {
 	stdin       io.WriteCloser
 	stdout      io.ReadCloser
 }
+
+type parseReturn struct {
+	isControl bool
+	Data      []byte
+}

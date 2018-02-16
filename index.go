@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -90,36 +91,43 @@ func main() {
 			handleErr(err)
 			log.Printf("%v HTTP bytes written", n)
 
-			ch := make(chan []byte)
+			ch := make(chan parseReturn)
 			eCh := make(chan error)
 			pppdInstance := pppdInstance{nil, nil, nil} // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
-			go func(ch chan []byte, eCh chan error) {
+			go func(ch chan parseReturn, eCh chan error) {
 				for {
 					// try to read the data
-					data := make([]byte, 2048)
-					n, err := conn.Read(data)
+					var data [4]byte
+					n, err := conn.Read(data[:])
 					if err != nil {
 						// send an error if it's encountered
 						eCh <- err
 						return
 					}
-
-					// If buffer filled, add to it
-					for n == 2048 {
-						dataNew := make([]byte, 2048)
-						n, err = conn.Read(dataNew)
-						data = append(data, dataNew...)
-
-						if err != nil {
-							// send an error if it's encountered
-							eCh <- err
-							return
-						}
+					if n < 4 {
+						eCh <- errors.New("Invalid packet")
+						return
 					}
-					// send data if we read some.
-					ch <- data
+					isControl, lengthToRead, err := decodeHeader(data[:])
+					if err != nil {
+						// send an error if it's encountered
+						eCh <- err
+						return
+					}
+					newData := make([]byte, lengthToRead)
+					n, err = conn.Read(newData)
+					if err != nil {
+						// send an error if it's encountered
+						eCh <- err
+						return
+					}
+					if n != lengthToRead {
+						eCh <- errors.New("Not all of packet read")
+						return
+					}
+					ch <- parseReturn{isControl, newData}
 				}
 			}(ch, eCh)
 
@@ -130,7 +138,12 @@ func main() {
 				case data := <-ch: // This case means we recieved data on the connection
 					// Do something with the data
 					//log.Printf("%s\n", hex.Dump(data))
-					handlePacket(data, conn, &pppdInstance)
+					if data.isControl {
+						header := parseControl(data.Data)
+						handleControlPacket(header, conn, &pppdInstance)
+					} else {
+						handleDataPacket(data.Data, conn, &pppdInstance)
+					}
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
 						log.Print("Client disconnected")
