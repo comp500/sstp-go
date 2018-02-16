@@ -54,7 +54,7 @@ func addPPPDResponder(pppdInstance *pppdInstance, conn net.Conn) {
 				return
 			}
 			// send data if we read some.
-			ch <- data[0:n]
+			ch <- data
 		}
 	}(ch, eCh, pppdInstance.stdout)
 
