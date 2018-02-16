@@ -40,7 +40,8 @@ func sendConnectionAckPacket(conn net.Conn) {
 	// Fake attribute, we don't actually implement crypto binding
 	header := sstpHeader{1, 0, true, 48}
 	attributes := make([]sstpAttribute, 1)
-	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, nil}
+	data := []byte{0, 0, 0, 3} // 3 means, supports SHA1 and SHA256
+	attributes[0] = sstpAttribute{0, AttributeIDCryptoBindingReq, 40, data}
 	controlHeader := sstpControlHeader{header, MessageTypeCallConnectAck, uint16(len(attributes)), attributes}
 
 	log.Printf("write: %v\n", controlHeader)
