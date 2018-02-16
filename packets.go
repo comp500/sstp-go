@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"os/exec"
 )
 
 type sstpHeader struct {
@@ -97,15 +95,4 @@ type sstpAttribute struct {
 type sstpDataHeader struct {
 	sstpHeader
 	Data []byte
-}
-
-type pppdInstance struct {
-	commandInst *exec.Cmd
-	stdin       io.WriteCloser
-	stdout      io.ReadCloser
-}
-
-type parseReturn struct {
-	isControl bool
-	Data      []byte
 }

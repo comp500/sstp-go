@@ -66,9 +66,8 @@ func handleControlPacket(controlHeader sstpControlHeader, conn net.Conn, pppdIns
 		// TODO: implement Nak?
 		// -> if protocols specified by req not supported
 		// however there is only PPP currently, so not a problem
-		createPPPD(pppdInstance)
+		createPPPD(pppdInstance, conn)
 		log.Print("pppd instance created")
-		go addPPPDResponder(pppdInstance, conn)
 	} else if controlHeader.MessageType == MessageTypeCallDisconnect {
 		sendDisconnectAckPacket(conn)
 		if pppdInstance.commandInst != nil {

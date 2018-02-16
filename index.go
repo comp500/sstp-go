@@ -14,6 +14,11 @@ func handleErr(err error) {
 	}
 }
 
+type parseReturn struct {
+	isControl bool
+	Data      []byte
+}
+
 func main() {
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -93,7 +98,7 @@ func main() {
 
 			ch := make(chan parseReturn)
 			eCh := make(chan error)
-			pppdInstance := pppdInstance{nil, nil, nil} // store null pointer to future pppd instance
+			pppdInstance := pppdInstance{nil, nil, newUnescaper(packetHandler{conn})} // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
 			go func(ch chan parseReturn, eCh chan error) {

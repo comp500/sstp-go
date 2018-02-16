@@ -1,5 +1,7 @@
 package main
 
+import "io"
+
 /* RFC 1662
  * C.2. 16-bit FCS Computation Method
  * https://tools.ietf.org/html/rfc1662#appendix-C.2
@@ -100,32 +102,46 @@ func pppEscape(inputBytes []byte) []byte {
 	return outputBytes[0:currentPos]
 }
 
-func pppUnescape(inputBytes []byte) [][]byte {
-	currentPos := 0
-	escaped := false
-	var packets [][]byte
-	currentPacket := make([]byte, maxFrameSize)
+type pppUnescaper struct {
+	currentPacket []byte
+	outputWriter  io.Writer
+	currentPos    int
+	escaped       bool
+}
 
-	for _, v := range inputBytes {
-		if escaped {
-			escaped = false
-			currentPacket[currentPos] = v ^ 0x20
-			currentPos++
-		} else if v == controlEscape {
-			escaped = true
-		} else if v == flagSequence {
-			if currentPos > 4 {
-				/* Ignore 2 byte FCS field */
-				packets = append(packets, currentPacket[0:currentPos])
-				currentPacket = make([]byte, maxFrameSize)
-				currentPos = 0
-			}
-		} else if currentPos < maxFrameSize {
-			currentPacket[currentPos] = v
-			currentPos++
-		}
+func newUnescaper(outputWriter io.Writer) pppUnescaper {
+	return pppUnescaper{outputWriter: outputWriter}
+}
+
+func (p pppUnescaper) Write(data []byte) (int, error) {
+	bytesWritten := 0
+	if p.currentPacket == nil {
+		p.currentPacket = make([]byte, maxFrameSize)
 	}
 
-	// TODO: check if FCS is good?
-	return packets
+	for _, v := range data {
+		if p.escaped {
+			p.escaped = false
+			p.currentPacket[p.currentPos] = v ^ 0x20
+			p.currentPos++
+		} else if v == controlEscape {
+			p.escaped = true
+		} else if v == flagSequence {
+			if p.currentPos > 4 {
+				/* Ignore 2 byte FCS field */
+				_, err := p.outputWriter.Write(p.currentPacket[0:p.currentPos])
+				if err != nil {
+					return bytesWritten, err
+				}
+				p.currentPacket = make([]byte, maxFrameSize)
+				p.currentPos = 0
+			}
+		} else if p.currentPos < maxFrameSize {
+			p.currentPacket[p.currentPos] = v
+			p.currentPos++
+		}
+		bytesWritten++
+	}
+
+	return bytesWritten, nil
 }
