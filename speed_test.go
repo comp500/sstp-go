@@ -7,7 +7,7 @@ import (
 	_ "net/http/pprof"
 )
 
-func main() {
+func main2() {
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
@@ -28,6 +28,9 @@ func main() {
 			defer c.Close()
 
 			conn2, err := net.Dial("tcp", "localhost:5201")
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			ch := make(chan []byte)
 			ch2 := make(chan []byte)
@@ -38,7 +41,7 @@ func main() {
 				for {
 					// try to read the data
 					data := make([]byte, 512)
-					n, err := conn.Read(data)
+					_, err := conn.Read(data)
 					if err != nil {
 						// send an error if it's encountered
 						eCh <- err
@@ -52,7 +55,7 @@ func main() {
 				for {
 					// try to read the data
 					data := make([]byte, 512)
-					n, err := conn2.Read(data)
+					_, err := conn2.Read(data)
 					if err != nil {
 						// send an error if it's encountered
 						eCh <- err
@@ -69,7 +72,7 @@ func main() {
 				case data := <-ch: // This case means we recieved data on the connection
 					conn2.Write(data)
 				case data := <-ch2: // This case means we recieved data on the connection
-					conn.Write(data)
+					c.Write(data)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
 						log.Print("Client disconnected")
