@@ -27,7 +27,10 @@ func main() {
 			// Shut down the connection.
 			defer c.Close()
 
+			conn2, err := net.Dial("tcp", "localhost:5201")
+
 			ch := make(chan []byte)
+			ch2 := make(chan []byte)
 			eCh := make(chan error)
 
 			// Start a goroutine to read from our net connection
@@ -45,11 +48,27 @@ func main() {
 				}
 			}(ch, eCh)
 
+			go func(ch chan []byte, eCh chan error) {
+				for {
+					// try to read the data
+					data := make([]byte, 512)
+					n, err := conn2.Read(data)
+					if err != nil {
+						// send an error if it's encountered
+						eCh <- err
+						return
+					}
+					ch <- data
+				}
+			}(ch2, eCh)
+
 			//ticker := time.Tick(time.Second)
 			// continuously read from the connection
 			for {
 				select {
 				case data := <-ch: // This case means we recieved data on the connection
+					conn2.Write(data)
+				case data := <-ch2: // This case means we recieved data on the connection
 					conn.Write(data)
 				case err := <-eCh: // This case means we got an error and the goroutine has finished
 					if err == io.EOF {
