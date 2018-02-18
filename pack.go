@@ -25,7 +25,7 @@ func packAttribute(attribute sstpAttribute, outputBytes []byte) {
 }
 
 func packControlHeader(header sstpControlHeader, outputBytes []byte) {
-	packHeader(header.sstpHeader, outputBytes[0:4])
+	packHeader(header.sstpHeader, outputBytes[:4])
 	binary.BigEndian.PutUint16(outputBytes[4:6], uint16(header.MessageType))
 	binary.BigEndian.PutUint16(outputBytes[6:8], header.AttributesLength)
 	currentPosition := 8
@@ -73,7 +73,7 @@ func sendEchoResponsePacket(conn net.Conn) {
 }
 
 func packDataHeader(header sstpDataHeader, outputBytes []byte) {
-	packHeader(header.sstpHeader, outputBytes[0:4])
+	packHeader(header.sstpHeader, outputBytes[:4])
 	copy(outputBytes[4:], header.Data)
 }
 

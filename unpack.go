@@ -28,7 +28,7 @@ func decodeHeader(input []byte) (bool, int, error) {
 
 func parseControl(input []byte) sstpControlHeader {
 	controlHeader := sstpControlHeader{}
-	controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[0:2]))
+	controlHeader.MessageType = MessageType(binary.BigEndian.Uint16(input[:2]))
 	controlHeader.AttributesLength = binary.BigEndian.Uint16(input[2:4])
 
 	attributes := make([]sstpAttribute, int(controlHeader.AttributesLength))
