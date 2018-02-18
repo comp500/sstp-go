@@ -52,9 +52,9 @@ func handleDataPacket(data []byte, conn net.Conn, pppdInstance *pppdInstance) {
 	if pppdInstance.commandInst == nil {
 		log.Fatal("pppd instance not started")
 	} else {
-		n, err := pppdInstance.stdin.Write(pppEscape(data))
+		_, err := pppdInstance.stdin.Write(pppEscape(data))
 		handleErr(err)
-		log.Printf("%v bytes written to pppd", n)
+		//log.Printf("%v bytes written to pppd", n)
 	}
 }
 
