@@ -1,6 +1,9 @@
 package main
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 /* RFC 1662
  * C.2. 16-bit FCS Computation Method
@@ -135,6 +138,8 @@ func (p pppUnescaper) Write(data []byte) (int, error) {
 		} else if p.currentPos < maxFrameSize {
 			p.currentPacket[p.currentPos] = v
 			p.currentPos++
+		} else {
+			fmt.Print("Packet trimmed")
 		}
 		bytesWritten++
 	}
