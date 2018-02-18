@@ -21,7 +21,7 @@ func packAttribute(attribute sstpAttribute, outputBytes []byte) {
 	// Don't set 0, should be reserved
 	outputBytes[1] = uint8(attribute.AttributeID)
 	binary.BigEndian.PutUint16(outputBytes[2:4], attribute.Length)
-	copy(outputBytes[4:(len(outputBytes)-4)], attribute.Data)
+	copy(outputBytes[4:], attribute.Data)
 }
 
 func packControlHeader(header sstpControlHeader, outputBytes []byte) {
