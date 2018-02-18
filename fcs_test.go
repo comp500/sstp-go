@@ -52,11 +52,20 @@ func BenchmarkCopy3(b *testing.B) {
 	//log.Printf("%v", hex.Dump(data2))
 }
 
-func BenchmarkCopy4(b *testing.B) {
+func BenchmarkCopy4(b *testing.B) { // faster
 	var data = make([]byte, 1024)
-	var data2 = make([]byte, 1028)
 	for n := 0; n < b.N; n++ {
+		var data2 = make([]byte, 1028)
 		copy(data2[4:], data)
+	}
+	//log.Printf("%v", hex.Dump(data2))
+}
+
+func BenchmarkCopy5(b *testing.B) { // slower
+	var data = make([]byte, 1024)
+	for n := 0; n < b.N; n++ {
+		data2 := append([]byte{0, 0, 0, 0}, data...)
+		_ = data2
 	}
 	//log.Printf("%v", hex.Dump(data2))
 }
