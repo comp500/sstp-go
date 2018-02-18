@@ -54,14 +54,14 @@ func pppEscape(inputBytes []byte) []byte {
 	length := (len(inputBytes)+2)*2 + 2
 	currentPos := 0
 	outputBytes := make([]byte, length)
-	fcs := pppInitFCS16
+	var fcs uint16 = pppInitFCS16
 
 	outputBytes[0] = flagSequence
 	currentPos++
 
 	for _, v := range inputBytes {
 		// black magic
-		fcs = fcs>>8 ^ int(fcstab[(fcs^int(v))&0xff])
+		fcs = fcs>>8 ^ fcstab[(fcs^uint16(v))&0xff]
 		// escape byte
 		if v < 0x20 || v == flagSequence || v == controlEscape {
 			outputBytes[currentPos] = controlEscape

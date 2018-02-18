@@ -22,3 +22,71 @@ func BenchmarkEscape(b *testing.B) {
 	}
 	//log.Printf("%v", hex.Dump(data2))
 }
+
+func BenchmarkCopy(b *testing.B) {
+	var data = make([]byte, 1024)
+	var data2 = make([]byte, 1024)
+	for n := 0; n < b.N; n++ {
+		for i, v := range data {
+			data2[i] = v
+		}
+	}
+	//log.Printf("%v", hex.Dump(data2))
+}
+
+func BenchmarkCopy2(b *testing.B) {
+	var data = make([]byte, 1024)
+	var data2 = make([]byte, 1024)
+	for n := 0; n < b.N; n++ {
+		copy(data2, data)
+	}
+	//log.Printf("%v", hex.Dump(data2))
+}
+
+func BenchmarkEscapeTest(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		var data = make([]byte, 1024)
+		length := (len(data)+2)*2 + 2
+		currentPos := 0
+		outputBytes := make([]byte, length)
+		fcs := pppInitFCS16
+		for _, v := range data {
+			// black magic
+			fcs = fcs>>8 ^ int(fcstab[(fcs^int(v))&0xff])
+			// escape byte
+			if v < 0x20 || v == flagSequence || v == controlEscape {
+				outputBytes[currentPos] = controlEscape
+				currentPos++
+				outputBytes[currentPos] = v ^ 0x20
+				currentPos++
+			} else {
+				outputBytes[currentPos] = v
+				currentPos++
+			}
+		}
+	}
+}
+
+func BenchmarkEscapeTest2(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		var data = make([]byte, 1024)
+		length := (len(data)+2)*2 + 2
+		currentPos := 0
+		outputBytes := make([]byte, length)
+		var fcs uint16 = pppInitFCS16
+		for _, v := range data {
+			// black magic
+			fcs = fcs>>8 ^ fcstab[(fcs^uint16(v))&0xff]
+			// escape byte
+			if v < 0x20 || v == flagSequence || v == controlEscape {
+				outputBytes[currentPos] = controlEscape
+				currentPos++
+				outputBytes[currentPos] = v ^ 0x20
+				currentPos++
+			} else {
+				outputBytes[currentPos] = v
+				currentPos++
+			}
+		}
+	}
+}
