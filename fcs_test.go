@@ -43,6 +43,24 @@ func BenchmarkCopy2(b *testing.B) {
 	//log.Printf("%v", hex.Dump(data2))
 }
 
+func BenchmarkCopy3(b *testing.B) {
+	var data = make([]byte, 1024)
+	var data2 = make([]byte, 1028)
+	for n := 0; n < b.N; n++ {
+		copy(data2[4:(len(data)+4)], data)
+	}
+	//log.Printf("%v", hex.Dump(data2))
+}
+
+func BenchmarkCopy4(b *testing.B) {
+	var data = make([]byte, 1024)
+	var data2 = make([]byte, 1028)
+	for n := 0; n < b.N; n++ {
+		copy(data2[4:], data)
+	}
+	//log.Printf("%v", hex.Dump(data2))
+}
+
 func BenchmarkEscapeTest(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		var data = make([]byte, 1024)
