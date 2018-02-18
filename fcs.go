@@ -129,10 +129,7 @@ func (p pppUnescaper) Write(data []byte) (int, error) {
 		} else if v == flagSequence {
 			if p.currentPos > 4 {
 				/* Ignore 2 byte FCS field */
-				_, err := p.outputWriter.Write(p.currentPacket[:(p.currentPos - 2)])
-				if err != nil {
-					return bytesWritten, err
-				}
+				go p.outputWriter.Write(p.currentPacket[:(p.currentPos - 2)])
 				p.currentPos = 0
 			}
 		} else if p.currentPos < maxFrameSize {
