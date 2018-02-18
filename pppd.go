@@ -18,7 +18,8 @@ type packetHandler struct {
 }
 
 func (p packetHandler) Write(data []byte) (int, error) {
-	sendDataPacket(data, p.conn)
+	packetBytes := packDataPacketFast(data)
+	go p.conn.Write(packetBytes)
 	return len(data), nil
 }
 

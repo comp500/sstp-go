@@ -78,7 +78,7 @@ func packDataHeader(header sstpDataHeader, outputBytes []byte) {
 }
 
 func sendDataPacket(inputBytes []byte, conn net.Conn) {
-	length := 8 + len(inputBytes)
+	length := 4 + len(inputBytes)
 	header := sstpHeader{1, 0, false, uint16(length)}
 	dataHeader := sstpDataHeader{header, inputBytes}
 
@@ -86,4 +86,13 @@ func sendDataPacket(inputBytes []byte, conn net.Conn) {
 	packetBytes := make([]byte, length)
 	packDataHeader(dataHeader, packetBytes)
 	conn.Write(packetBytes)
+}
+
+func packDataPacketFast(inputBytes []byte) []byte {
+	packetBytes := make([]byte, len(inputBytes)+4)
+	packetBytes[0] = 0x10
+	// byte 1 is 0 - data packet
+	binary.BigEndian.PutUint16(packetBytes[2:4], uint16(len(packetBytes)))
+	copy(packetBytes[4:], inputBytes)
+	return packetBytes
 }
