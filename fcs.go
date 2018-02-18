@@ -110,14 +110,11 @@ type pppUnescaper struct {
 }
 
 func newUnescaper(outputWriter io.Writer) pppUnescaper {
-	return pppUnescaper{outputWriter: outputWriter}
+	return pppUnescaper{outputWriter: outputWriter, currentPacket: make([]byte, maxFrameSize)}
 }
 
 func (p pppUnescaper) Write(data []byte) (int, error) {
 	bytesWritten := 0
-	if p.currentPacket == nil {
-		p.currentPacket = make([]byte, maxFrameSize)
-	}
 
 	for _, v := range data {
 		if p.escaped {
@@ -133,7 +130,6 @@ func (p pppUnescaper) Write(data []byte) (int, error) {
 				if err != nil {
 					return bytesWritten, err
 				}
-				p.currentPacket = make([]byte, maxFrameSize)
 				p.currentPos = 0
 			}
 		} else if p.currentPos < maxFrameSize {
