@@ -104,7 +104,9 @@ func main() {
 
 			ch := make(chan parseReturn)
 			eCh := make(chan error)
-			pppdInstance := pppdInstance{nil, nil, newUnescaper(packetHandler{conn})} // store null pointer to future pppd instance
+
+			packChan := make(chan []byte)
+			pppdInstance := pppdInstance{nil, nil, newUnescaper(packetHandler{conn, packChan})} // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
 			go func(ch chan parseReturn, eCh chan error) {
@@ -141,6 +143,16 @@ func main() {
 					ch <- parseReturn{isControl, newData}
 				}
 			}(ch, eCh)
+
+			go func(packChan chan []byte) {
+				for {
+					select {
+					case data := <-packChan: // This case means we recieved data on the connection
+						packetBytes := packDataPacketFast(data)
+						conn.Write(packetBytes)
+					}
+				}
+			}(packChan)
 
 			//ticker := time.Tick(time.Second)
 			// continuously read from the connection

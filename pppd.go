@@ -14,12 +14,12 @@ type pppdInstance struct {
 }
 
 type packetHandler struct {
-	conn net.Conn
+	conn     net.Conn
+	packChan chan []byte
 }
 
 func (p packetHandler) Write(data []byte) (int, error) {
-	packetBytes := packDataPacketFast(data)
-	p.conn.Write(packetBytes)
+	p.packChan <- data
 	return len(data), nil
 }
 
