@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"runtime"
 )
 
 func handleErr(err error) {
@@ -22,6 +23,7 @@ type parseReturn struct {
 }
 
 func main() {
+	runtime.SetBlockProfileRate(1)
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
