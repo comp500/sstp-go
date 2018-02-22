@@ -19,7 +19,8 @@ type packetHandler struct {
 }
 
 func (p packetHandler) Write(data []byte) (int, error) {
-	p.packChan <- data
+	packetBytes := packDataPacketFast(data)
+	p.packChan <- packetBytes
 	return len(data), nil
 }
 

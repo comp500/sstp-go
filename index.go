@@ -148,8 +148,7 @@ func main() {
 				for {
 					select {
 					case data := <-packChan: // This case means we recieved data on the connection
-						packetBytes := packDataPacketFast(data)
-						conn.Write(packetBytes)
+						conn.Write(data)
 					}
 				}
 			}(packChan)
