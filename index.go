@@ -108,6 +108,7 @@ func main() {
 			eCh := make(chan error)
 
 			packChan := make(chan []byte)
+			// TODO: shouldn't this be c, rather than conn??????
 			pppdInstance := pppdInstance{nil, nil, newUnescaper(packetHandler{conn, packChan})} // store null pointer to future pppd instance
 
 			// Start a goroutine to read from our net connection
@@ -115,6 +116,7 @@ func main() {
 				for {
 					// try to read the data
 					var data [4]byte
+					// TODO: shouldn't this be c, rather than conn??????
 					n, err := conn.Read(data[:])
 					if err != nil {
 						// send an error if it's encountered
